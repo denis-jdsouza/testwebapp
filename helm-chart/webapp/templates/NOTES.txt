@@ -1,0 +1,7 @@
+# =============================================================================
+# Written by    : Denis D'Souza
+# Release	    : .Chart.appVersion
+# Creation date : March 2020
+# Description   : This is a Helm chart to on-baord apps into K8s (AWS EKS)
+# Usage         : helm install <helm chart directory> -f <values YAML files>
+# ==============================================================================

@@ -1,0 +1,23 @@
+{{- if eq .Values.serviceEnable "yes" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}-svc
+  labels:
+    app: {{ .Values.appName }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+spec:
+  {{- if eq .Values.serviceType "NodePort" }}
+  type: NodePort
+  {{- else }}
+  type: ClusterIP
+  {{- end }}
+  {{- with .Values.svcports }}
+  ports:
+    {{- toYaml . | trim | nindent 2 }}
+    {{- end }}
+  selector:
+    app: {{ .Values.appName }}
+{{- end }}
