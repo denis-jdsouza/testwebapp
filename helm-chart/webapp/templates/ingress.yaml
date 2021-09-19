@@ -1,0 +1,45 @@
+{{- if eq .Values.ingress "yes" }}
+{{- $appName := .Values.appName -}}
+{{- $rulesForSvc := .Values.rulesForSvc -}}
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    {{- if eq .Values.ingressType "public" }}
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    {{- end }}
+    alb.ingress.kubernetes.io/tags: Name={{ .Values.appName }}-EKS-ingress
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/healthcheck-path: /alb-dummyhealthchk
+    alb.ingress.kubernetes.io/success-codes: "250"
+    alb.ingress.kubernetes.io/target-type: ip
+  name: {{ .Values.appName }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  rules:
+  {{- if eq .Values.routingRules "hostbased" }}
+    {{- range $ForLiveSvc := .Values.rulesForSvc }}
+    - host: {{ $ForLiveSvc.host }}
+      http:
+        paths:
+          - path: {{ $ForLiveSvc.path }}
+            backend:
+              serviceName: {{ $appName }}-svc
+              servicePort: {{ $ForLiveSvc.port }}
+    {{- end }}
+  {{- else }}
+    {{- range $ForLiveSvc := .Values.rulesForSvc }}
+    - http:
+        paths:
+          - path: {{ $ForLiveSvc.path }}
+            backend:
+              serviceName: {{ $appName }}-svc
+              servicePort: {{ $ForLiveSvc.port }}
+   {{- end }}
+  {{- end }}
+{{- end }}

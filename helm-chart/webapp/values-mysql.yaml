@@ -1,0 +1,105 @@
+# This is a YAML-formatted file
+# Declare variables here to be passed to the Helm chart
+
+############ App General Details ##############
+# The name of you app/microservice
+appName: mysql
+# The namespace where the app will run, if not specified namespace will be 'default'
+namespace: "testweb"
+
+############ App Deployment Details #############
+# does your app expose ports (yes/no) ?
+portsExposed: "yes"
+# if portsExposed: "yes", please specify the port deails
+ports:
+- containerPort: 3306
+  name: db-port
+  protocol: TCP
+# Do you want to specify the 'command' parameter in deployment, this will override 'ENTRYPOINT' if specified in Dockerfile (yes/no) ?
+commandSpecify: "no"
+# if commandSpecify: "yes", specify the required command
+command: '["node"]'
+# Do you want to specify the 'args' parameter in deployment, this will override 'CMD' if specified in Dockerfile (yes/no) ?
+argsSpecify: "no"
+# if argsSpecify: "yes", specify the required args
+args: '["/path/to/script.js", "ARGS"]'
+# does a liveness-probe exists for your app (yes/no) ?
+livenessProbeExists: "no"
+# if livenessProbeExists: "yes", please specify the liveness-probe details
+livenessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+  initialDelaySeconds: 10
+# does a rediness-probe exists for your app (yes/no)
+readinessProbeExists: "no"
+# if readinessProbeExists: "yes", please specify the rediness-probe details
+readinessProbe:
+  httpGet:
+    path: /
+    port: 8080
+  periodSeconds: 15
+  timeoutSeconds: 5
+  failureThreshold: 2
+  successThreshold: 2
+  initialDelaySeconds: 10
+# The number of seconds you app need for graceful shutdown (default '30' sec)
+terminationGracePeriod: ""
+# specify the container image repo path
+imageRepoPath: mysql:5.7.35
+# Does you app use environment variables (yes/no) ?
+envVarsUsed: "yes"
+# if envVarsUsed: "yes", please specify the environment variables
+env:          
+  - name: "MYSQL_DATABASE"
+    value: "db_example"
+  - name: "MYSQL_ROOT_PASSWORD"
+    value: "some@temp#passwd"
+# specify the CPU/Memory resources your app
+resources:
+  requests:
+    cpu: 100m
+    memory: 200Mi
+  limits:
+    cpu: 200m
+    memory: 400Mi
+# specify the number of pods to run
+replicaCount: 1
+
+############ App ConfigMap Details #############
+# Does your app need a ConfigMap (yes/no) ?
+configMapRequired: "no"
+# if configMapRequired: "yes", please specify the ConfigMap name, final name will be 'appName-configMapName'
+configMapName: "cm"
+# if configMapRequired: "yes", please specify the data for the ConfigMap
+configMapData:
+  color: purple
+  textmode: "true"
+
+############# App Service Details ###############
+# Does your app need a service to expose ports (yes/no) ?
+serviceEnable: "yes"
+# if serviceEnable: "yes", please specify the type of service you need (ClustrIP/NodePort) ?
+serviceType: "ClustrIP"
+# if serviceEnable: "yes", please specify the port-mapping for service
+svcports:
+- port: 3306
+  targetPort: 3306
+  protocol: TCP
+  name: db-port
+
+############# App Ingress Details ###############
+# Does your app need to be exposed via a Load-blancer/ALB ?
+ingress: "no"
+# if ingress: "yes", please fill-up the details under this ingress section
+# please specify if your app need a 'public' or 'private' facing Load-blancer/ALB ?
+ingressType: public
+# What type of routing rules do you need for ingress (pathbased/hostbased)?
+routingRules: pathbased
+# please specify routing rules for ingress
+rulesForSvc:
+- path: /*
+  port: 80

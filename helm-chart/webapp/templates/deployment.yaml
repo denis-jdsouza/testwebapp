@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.appName }}
+  {{- if .Values.namespace }}
+  namespace: {{ .Values.namespace }}
+  {{- end }}
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.appName }}
+    spec:
+      containers:
+      - name: {{ .Values.appName }}
+        image: {{ .Values.imageRepoPath }}
+        {{- if eq .Values.commandSpecify "yes" }}
+        command: {{ .Values.command }}
+        {{- end }}
+        {{- if eq .Values.argsSpecify "yes" }}
+        args: {{ .Values.args }}
+        {{- end }}
+        {{- if eq .Values.portsExposed "yes" }}
+          {{- with .Values.ports }}
+        ports:
+          {{- toYaml . | trim | nindent 8 }}
+          {{- end }}
+        {{- end }}
+        {{- if eq .Values.envVarsUsed "yes" }}
+        env:
+          {{- with .Values.env }}
+          {{- toYaml . | trim | nindent 8 }}
+            {{- end }}
+        {{- end }}
+        {{- if eq .Values.configMapRequired "yes" }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Values.appName }}-{{ .Values.configMapName}}
+        {{- end }}
+        {{- if eq .Values.livenessProbeExists "yes" }}
+          {{- with .Values.livenessProbe }}
+        livenessProbe:
+            {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- if eq .Values.readinessProbeExists "yes" }}
+          {{- with .Values.readinessProbe }}
+        readinessProbe:
+            {{- toYaml . | trim | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        {{- with .Values.resources }}
+        resources:
+          {{- toYaml . | trim | nindent 10 }}
+        {{- end }}
+      {{- if .Values.terminationGracePeriod }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriod }}
+      {{- end }}
